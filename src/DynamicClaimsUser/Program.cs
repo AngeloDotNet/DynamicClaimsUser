@@ -64,7 +64,7 @@ public class Program
 		app.UseAuthorization();
 
 		// Endpoint per gestire i claims dinamici
-		app.MapPost("/claims", [AllowAnonymous] async (ClaimModel claimModel, ApplicationDbContext context) =>
+		app.MapPost("/claims", [Authorize] async (ClaimModel claimModel, ApplicationDbContext context) =>
 		{
 			var dynamicClaim = new DynamicClaim { Type = claimModel.Type, Value = claimModel.Value };
 			context.DynamicClaims.Add(dynamicClaim);
@@ -72,13 +72,13 @@ public class Program
 			return Results.Ok(dynamicClaim);
 		});
 
-		app.MapGet("/claims", [AllowAnonymous] async (ApplicationDbContext context) =>
+		app.MapGet("/claims", [Authorize] async (ApplicationDbContext context) =>
 		{
 			var claims = await context.DynamicClaims.ToListAsync();
 			return Results.Ok(claims);
 		});
 
-		app.MapPost("/users/{userId}/claims", [AllowAnonymous] async (string userId, [FromBody] ClaimModel claimModel, UserManager<IdentityUser> userManager, ApplicationDbContext context) =>
+		app.MapPost("/users/{userId}/claims", [Authorize] async (string userId, [FromBody] ClaimModel claimModel, UserManager<IdentityUser> userManager, ApplicationDbContext context) =>
 		{
 			var user = await userManager.FindByIdAsync(userId);
 
@@ -105,7 +105,7 @@ public class Program
 			return Results.BadRequest(result.Errors);
 		});
 
-		app.MapGet("/users/{userId}/claims", [AllowAnonymous] async (string userId, UserManager<IdentityUser> userManager) =>
+		app.MapGet("/users/{userId}/claims", [Authorize] async (string userId, UserManager<IdentityUser> userManager) =>
 		{
 			var user = await userManager.FindByIdAsync(userId);
 			if (user == null)
@@ -117,7 +117,7 @@ public class Program
 			return Results.Ok(claims.Select(c => new { c.Type, c.Value }));
 		});
 
-		app.MapDelete("/users/{userId}/claims", [AllowAnonymous] async (string userId, [FromBody] ClaimModel claimModel, UserManager<IdentityUser> userManager) =>
+		app.MapDelete("/users/{userId}/claims", [Authorize] async (string userId, [FromBody] ClaimModel claimModel, UserManager<IdentityUser> userManager) =>
 		{
 			var user = await userManager.FindByIdAsync(userId);
 			if (user == null)
